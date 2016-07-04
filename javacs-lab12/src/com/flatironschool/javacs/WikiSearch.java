@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -61,7 +63,22 @@ public class WikiSearch {
 	 */
 	public WikiSearch or(WikiSearch that) {
         // FILL THIS IN!
-		return null;
+		Map<String, Integer> union = new HashMap<String, Integer>();
+		Set<Entry<String, Integer>> unionKeySet = new HashSet<Entry<String, Integer>>(this.sort());
+		unionKeySet.addAll(that.sort());
+		for (Entry<String, Integer> entry : unionKeySet) {
+			String key = entry.getKey();
+			int firstValue = this.getRelevance(key);
+			int secondValue = that.getRelevance(key);
+			if (firstValue != 0 && secondValue != 0) {
+				union.put(key, firstValue + secondValue);
+			} else if (firstValue != 0) {
+				union.put(key, firstValue);
+			} else {
+				union.put(key, secondValue);
+			}
+		}
+		return new WikiSearch(union);
 	}
 	
 	/**
@@ -72,7 +89,13 @@ public class WikiSearch {
 	 */
 	public WikiSearch and(WikiSearch that) {
         // FILL THIS IN!
-		return null;
+		Map<String, Integer> intersection = new HashMap<String, Integer>();
+		for (String key : map.keySet()) {
+			if (that.getRelevance(key) != 0) {
+				intersection.put(key, this.getRelevance(key) + that.getRelevance(key));
+			}
+		}
+		return new WikiSearch(intersection);
 	}
 	
 	/**
@@ -83,7 +106,13 @@ public class WikiSearch {
 	 */
 	public WikiSearch minus(WikiSearch that) {
         // FILL THIS IN!
-		return null;
+		Map<String, Integer> minus = new HashMap<String, Integer>();
+		for (String key : map.keySet()) {
+			if (that.getRelevance(key) == 0) {
+				minus.put(key, this.getRelevance(key));
+			}
+		}
+		return new WikiSearch(minus);
 	}
 	
 	/**
@@ -105,7 +134,21 @@ public class WikiSearch {
 	 */
 	public List<Entry<String, Integer>> sort() {
         // FILL THIS IN!
-		return null;
+        List<Entry<String, Integer>> list = new LinkedList<Entry<String, Integer>>(map.entrySet());
+		Comparator<Entry<String, Integer>> comparator = new Comparator<Entry<String, Integer>>() {
+			@Override
+			public int compare(Entry<String, Integer> entry1, Entry<String, Integer> entry2) {
+				if (entry1.getValue() < entry2.getValue()) {
+					return -1;
+				} else if (entry1.getValue() > entry2.getValue()) {
+					return 1;
+				} else {
+					return 0;
+				}
+			}
+		};
+		Collections.sort(list, comparator);
+		return list;
 	}
 
 	/**
